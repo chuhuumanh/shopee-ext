@@ -1,4 +1,5 @@
 import JSZip from 'jszip';
+let index = 0;
 
 function waitForElement(selector, callback) {
   const observer = new MutationObserver((mutations, obs) => {
@@ -100,6 +101,35 @@ async function exportFolderByData(data) {
   });
 }
 
+async function waitSaveDataForFolder(folder, listLink) {
+  const promises = [];
+  const handleCreateFileForFolder = async (folder, item) => {
+    const subFolder = folder.folder(index + 1);
+    // Lưu các liên kết vào subfolder tương ứng
+    for (let j = 0; j < item.links.length; j++) {
+      const objLink = item.links[j];
+      const fileName = objLink.link.split('/').pop();
+      const response = await fetch(objLink.link);
+      const blob = await response.blob();
+      // Chuyển đổi webp sang png (nếu cần)
+      if (objLink.type === 'img' && fileName.endsWith('.webp')) {
+        const imgBlob = await convertWebPToImage(blob, 'image/png');
+        subFolder.file(fileName.replace('.webp', '.png'), imgBlob);
+      } else {
+        subFolder.file(fileName, blob);
+      }
+    }
+  };
+
+  listLink.forEach((item) => {
+    console.log(index, 'index');
+    promises.push(handleCreateFileForFolder(folder, item, index));
+    index += 1;
+  });
+
+  return await Promise.all(promises);
+}
+
 async function executeLogic() {
   const getNextButton = () => {
     let nextButton = null;
@@ -123,9 +153,14 @@ async function executeLogic() {
   const LIMIT_PAGE = 20;
   let isStop = false;
   let countError = 0;
-  const dataExport = [];
-
+  const zip = new JSZip();
+  const nameZip = document
+    .querySelector('.WBVL_7 span')
+    ?.textContent.replace(/ /g, '-');
+  const comments = [];
+  const folder = zip.folder('images');
   do {
+    const dataLinks = [];
     if (countError >= 3) {
       isStop = true;
     }
@@ -175,27 +210,45 @@ async function executeLogic() {
           }
         });
 
-        if (comment || links.length > 0) {
-          dataExport.push({
-            comment,
+        if (comment) {
+          comments.push(comment);
+        }
+
+        if (links.length > 0) {
+          dataLinks.push({
             links,
           });
         }
       });
-
       const buttonNext = getNextButton();
       if (!buttonNext || buttonNext.textContent > LIMIT_PAGE) {
         isStop = true;
       }
       buttonNext.click();
-      await wait(2000);
+      await waitSaveDataForFolder(folder, dataLinks);
+      await wait(500);
     } catch (error) {
       countError += 1;
     }
   } while (!isStop);
+  zip.file('comments.txt', comments.join('\n'));
 
-  await exportFolderByData(dataExport);
-  chrome.runtime.sendMessage({ action: 'next' });
+  zip
+    .generateAsync({ type: 'blob' })
+    .then((content) => {
+      const url = window.URL.createObjectURL(content);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `${nameZip}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    })
+    .then(() => {
+      chrome.runtime.sendMessage({ action: 'next' });
+    });
 }
 function getElementPosition(selector) {
   const element = document.querySelector(selector);
