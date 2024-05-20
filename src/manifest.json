@@ -15,7 +15,7 @@
   "content_scripts": [
     {
       "matches": ["https://shopee.vn/*"],
-      "js": ["contentScript.bundle.js"],
+      "js": ["contentScript.bundle.js", "jszip.bundle.js"],
       "css": ["content.styles.css"]
     }
   ],

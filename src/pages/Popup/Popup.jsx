@@ -14,7 +14,7 @@ import './Popup.css';
 
 const Popup = () => {
   const [textValue, setTextValue] = useState(
-    'https://shopee.vn/%C3%81o-Len-C%E1%BB%95-L%E1%BB%8D-Ch%E1%BA%A5t-D%C3%A0y-D%E1%BA%B7n-Cho-B%C3%A9-i.1158091736.24708496773?publish_id=&sp_atk=3e6c388e-b7f3-4b51-a8f0-573acdc110ec&xptdk=3e6c388e-b7f3-4b51-a8f0-573acdc110ec'
+    'https://shopee.vn/%C3%81o-Len-C%E1%BB%95-b%C3%A8o-mix-c%E1%BA%A3-th%E1%BA%BF-gi%E1%BB%9Bi-cho-b%C3%A9-size-8-30kg-i.75528896.21286673438?publish_id=&sp_atk=5db21b0a-5d71-4a02-b872-badb655073b2&xptdk=5db21b0a-5d71-4a02-b872-badb655073b2'
   );
 
   const handleChange = (event) => {
