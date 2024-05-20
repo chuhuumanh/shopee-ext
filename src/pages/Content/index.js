@@ -22,56 +22,85 @@ function wait(ms) {
   });
 }
 
+function isNumber(value) {
+  return typeof value === 'number' && !isNaN(value);
+}
+
 async function executeLogic() {
-  // do {
-  let shopeeButtonIndex = -1;
-  const LIMIT_PAGE = 10;
-
-  do {
-    // const dataExport = [];
-    // const reviews = document.querySelectorAll(`.shopee-product-rating`);
-    // reviews.forEach((element) => {
-    //   const comment = element.querySelector(
-    //     `[style="margin-top: 0.75rem;"]`
-    //   )?.textContent;
-    //   const links = [];
-    //   const elementLinks = element.querySelectorAll(
-    //     `.rating-media-list .rating-media-list__zoomed-image ul >li`
-    //   );
-    //   elementLinks.forEach((elementLink) => {
-    //     const isVideo = elementLink.querySelector('video');
-    //     if (isVideo) {
-    //       links.push({
-    //         link: elementLink.querySelector('video').src,
-    //         type: 'video',
-    //       });
-    //     } else {
-    //       links.push({
-    //         link: elementLink.querySelector('img').src,
-    //         type: 'img',
-    //       });
-    //     }
-    //   });
-
-    //   dataExport.push({
-    //     comment,
-    //     links,
-    //   });
-    // });
-    // console.log(dataExport, 'dataExport');
+  const getNextButton = () => {
+    let nextButton = null;
     const listButtonNextPage = document.querySelectorAll(
       `.product-ratings__page-controller button`
     );
+
     listButtonNextPage.forEach((button, index) => {
       if (button.classList.contains('shopee-button-solid')) {
-        shopeeButtonIndex = index;
-        return;
+        if (
+          listButtonNextPage[index + 1] &&
+          isNumber(+listButtonNextPage[index + 1].textContent)
+        ) {
+          nextButton = listButtonNextPage[index + 1];
+          return;
+        }
       }
     });
-    listButtonNextPage[shopeeButtonIndex + 1].click();
-    await wait(1000);
-    console.log(shopeeButtonIndex, 'shopeeButtonIndex');
-  } while (shopeeButtonIndex <= LIMIT_PAGE);
+    return nextButton;
+  };
+  const LIMIT_PAGE = 5;
+  let isStop = false;
+  do {
+    const dataExport = [];
+    const reviews = document.querySelectorAll(`.shopee-product-rating`);
+    reviews.forEach((element) => {
+      let comment = '';
+      const elementComment = element.querySelectorAll(
+        `[style="position: relative; box-sizing: border-box; margin: 15px 0px; font-size: 14px; line-height: 20px; color: rgba(0, 0, 0, 0.87); word-break: break-word; white-space: pre-wrap;"] div`
+      );
+
+      elementComment.forEach((element) => {
+        const isHaveSpan = element.querySelector('span');
+        if (!isHaveSpan && element.textContent !== null) {
+          comment += element.textContent;
+        }
+      });
+
+      const links = [];
+      const elementLinks = element.querySelectorAll(
+        `.rating-media-list .rating-media-list__zoomed-image ul >li`
+      );
+      elementLinks.forEach((elementLink) => {
+        const isVideo = elementLink.querySelector('video');
+        if (isVideo) {
+          links.push({
+            link: elementLink.querySelector('video').src,
+            type: 'video',
+          });
+        } else {
+          links.push({
+            link: elementLink.querySelector('img').src,
+            type: 'img',
+          });
+        }
+      });
+
+      if (comment || links.length > 0) {
+        dataExport.push({
+          comment,
+          links,
+        });
+      }
+    });
+    console.log(dataExport);
+
+    const buttonNext = getNextButton();
+    if (!buttonNext || buttonNext.textContent > LIMIT_PAGE) {
+      isStop = true;
+      return;
+    }
+
+    buttonNext.click();
+    await wait(1500);
+  } while (!isStop);
   console.log('thoát khỏi con mập');
 
   // chrome.runtime.sendMessage({ action: 'next' });
