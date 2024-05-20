@@ -62,6 +62,7 @@ async function exportFolderByData(data) {
   zip.file('comments.txt', comments);
 
   const folder = zip.folder('images');
+
   for (let i = 0; i < data.length; i++) {
     const item = data[i];
     const subFolder = folder.folder(i + 1);
@@ -119,7 +120,7 @@ async function executeLogic() {
     });
     return nextButton;
   };
-  const LIMIT_PAGE = 2;
+  const LIMIT_PAGE = 20;
   let isStop = false;
   let countError = 0;
   const dataExport = [];
