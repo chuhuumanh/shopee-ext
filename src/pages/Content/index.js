@@ -37,7 +37,7 @@ async function executeLogic() {
       if (button.classList.contains('shopee-button-solid')) {
         if (
           listButtonNextPage[index + 1] &&
-          isNumber(+listButtonNextPage[index + 1].textContent)
+          +listButtonNextPage[index + 1].textContent !== 0
         ) {
           nextButton = listButtonNextPage[index + 1];
           return;
@@ -46,19 +46,19 @@ async function executeLogic() {
     });
     return nextButton;
   };
-  const LIMIT_PAGE = 5;
-  let isStop = false;
-  let countError = 0;
   const folderName = document
     .querySelector('.WBVL_7 span')
     ?.textContent.replace(/ /g, '-');
+  const LIMIT_PAGE = 5;
+  let isStop = false;
+  let countError = 0;
+  const dataExport = [];
+
   do {
     if (countError >= 3) {
       isStop = true;
-      return;
     }
     try {
-      const dataExport = [];
       const reviews = document.querySelectorAll(`.shopee-product-rating`);
       reviews.forEach((element) => {
         let comment = '';
@@ -103,9 +103,7 @@ async function executeLogic() {
       const buttonNext = getNextButton();
       if (!buttonNext || buttonNext.textContent > LIMIT_PAGE) {
         isStop = true;
-        return;
       }
-
       buttonNext.click();
       await wait(1500);
     } catch (error) {
@@ -113,8 +111,7 @@ async function executeLogic() {
     }
   } while (!isStop);
 
-  console.log('thoát khỏi con mập');
-
+  console.log(dataExport);
   // chrome.runtime.sendMessage({ action: 'next' });
 }
 function getElementPosition(selector) {
