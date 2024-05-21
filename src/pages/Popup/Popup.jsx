@@ -9,13 +9,10 @@ import {
   Button,
 } from '@mui/material';
 import TextField from '@mui/material/TextField';
-
 import './Popup.css';
 
 const Popup = () => {
-  const [textValue, setTextValue] = useState(
-    'https://shopee.vn/%C3%81o-Len-C%E1%BB%95-b%C3%A8o-mix-c%E1%BA%A3-th%E1%BA%BF-gi%E1%BB%9Bi-cho-b%C3%A9-size-8-30kg-i.75528896.21286673438?publish_id=&sp_atk=5db21b0a-5d71-4a02-b872-badb655073b2&xptdk=5db21b0a-5d71-4a02-b872-badb655073b2'
-  );
+  const [textValue, setTextValue] = useState('');
 
   const handleChange = (event) => {
     setTextValue(event.target.value);
@@ -41,7 +38,7 @@ const Popup = () => {
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Avatar
               alt="Company Logo"
-              src="./icon128.png"
+              src="./icon-128.png"
               sx={{ width: 40, height: 40, marginRight: 1 }}
             />
             <Typography
