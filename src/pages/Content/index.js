@@ -1,6 +1,8 @@
 import JSZip from 'jszip';
 let index = 0;
 
+window.scrollTo({ top: 1000, behavior: 'smooth' });
+
 function waitForElement(selector, callback) {
   const observer = new MutationObserver((mutations, obs) => {
     if (document.querySelector(selector)) {
@@ -13,18 +15,6 @@ function waitForElement(selector, callback) {
     childList: true,
     subtree: true,
   });
-}
-
-function wait(ms) {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(ms);
-    }, ms);
-  });
-}
-
-function isNumber(value) {
-  return typeof value === 'number' && !isNaN(value);
 }
 
 // Chuyển đổi hình ảnh WebP sang PNG hoặc JPEG sử dụng canvas
