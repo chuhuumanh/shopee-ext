@@ -10,6 +10,13 @@ import {
 } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import './Popup.css';
+function wait(ms) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(ms);
+    }, ms);
+  });
+}
 
 function CookiesToJson(e) {
   var o = e.match(/(Mozilla.*?)\|/);
@@ -60,7 +67,8 @@ const Popup = () => {
           action: 'importCookies',
           data: cookiesJSON,
         },
-        () => {
+        async () => {
+          await wait(3000);
           if (urls.length > 0) {
             chrome.runtime.sendMessage({ action: 'start', urls: urls });
           }

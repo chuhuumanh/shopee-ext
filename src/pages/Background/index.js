@@ -2,13 +2,6 @@ let urls = []; // Array of URLs to be processed
 let currentIndex = 0;
 let currentTabId = null; // To store the current tab ID
 
-function wait(ms) {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(ms);
-    }, ms);
-  });
-}
 // import từ extension khác hic
 
 /**
@@ -402,7 +395,6 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
           });
         })(cookie);
       }
-      await wait(2500);
       sendResponse(true);
     } catch (error) {
       console.log('Failed to import cookies!', error);
