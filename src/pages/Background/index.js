@@ -399,6 +399,22 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     } catch (error) {
       console.log('Failed to import cookies!', error);
     }
+  } else if (message.action === 'INIT') {
+    chrome.tabs.update({ url: 'https://shopee.vn/' }, (tab) => {
+      chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
+        if (tabId === tab.id && info.status === 'complete') {
+          chrome.tabs.onUpdated.removeListener(listener);
+          console.log('sài gòn bơ chầy');
+          chrome.tabs.sendMessage(tab.id, {
+            action: 'CHECK_LOGIN',
+            data: {
+              username: 'podn0h41zo',
+              password: 'NovaPro@1',
+            },
+          });
+        }
+      });
+    });
   }
 });
 

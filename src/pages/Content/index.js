@@ -3,6 +3,54 @@ let index = 0;
 
 window.scrollTo({ top: 1000, behavior: 'smooth' });
 
+function wait(ms) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(ms);
+    }, ms);
+  });
+}
+
+chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
+  if (request.action === 'CHECK_LOGIN') {
+    const infoLogin = request.data;
+    const LIMIT = 4;
+    let retry = 0;
+    let isStop = false;
+    let isLogin = true;
+
+    while (!isStop && retry <= LIMIT) {
+      const formLogin = document.querySelector(`.bp7sPl.YN9KVd.Rlj6l5`);
+      console.log(formLogin);
+      if (formLogin) {
+        isStop = true;
+        isLogin = false;
+      }
+      await wait(1000);
+      retry += 1;
+    }
+
+    console.log(isStop, isLogin);
+
+    if (!isLogin) {
+      const elementUsername = document.querySelector('[name="loginKey"]');
+      elementUsername.click();
+      elementUsername.focus();
+      elementUsername.value = infoLogin.username;
+      await wait(2000);
+      const elementPassword = document.querySelector('[name="password"]');
+      elementPassword.click();
+      elementPassword.focus();
+      elementPassword.value = infoLogin.password;
+
+      // const buttonLogin = document.querySelector(
+      //   '.bp7sPl.YN9KVd.Rlj6l5 button'
+      // );
+      // buttonLogin.click();
+    }
+  }
+});
+
 function waitForElement(selector, callback) {
   const observer = new MutationObserver((mutations, obs) => {
     if (document.querySelector(selector)) {
