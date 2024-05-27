@@ -106,7 +106,7 @@ async function executeLogic() {
     });
     return nextButton;
   };
-  const LIMIT_PAGE = 10;
+  const LIMIT_PAGE = 50;
   let isStop = false;
   let countError = 0;
   const zip = new JSZip();
