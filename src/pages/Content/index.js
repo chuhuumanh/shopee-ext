@@ -42,6 +42,7 @@ function convertWebPToImage(blob, format = 'image/png') {
 }
 
 async function waitSaveDataForFolder(folder, listLink) {
+  console.log(listLink, 'listLink');
   const promises = [];
   const handleCreateFileForFolder = async (folder, item) => {
     const subFolder = folder.folder(index + 1);
@@ -62,7 +63,6 @@ async function waitSaveDataForFolder(folder, listLink) {
   };
 
   listLink.forEach((item) => {
-    console.log(index, 'index');
     promises.push(handleCreateFileForFolder(folder, item, index));
     index += 1;
   });
@@ -162,8 +162,9 @@ async function executeLogic() {
               type: 'video',
             });
           } else {
+            const urlLink = `${elementLink.querySelector('img').src}.webp`;
             links.push({
-              link: elementLink.querySelector('img').src,
+              link: urlLink,
               type: 'img',
             });
           }

@@ -7,9 +7,15 @@ import {
   Avatar,
   Box,
   Button,
+  TextField,
 } from '@mui/material';
-import TextField from '@mui/material/TextField';
+import axios from 'axios';
 import './Popup.css';
+
+const GOOGLE_API_KEY = 'AIzaSyA4MliCYL1Fq55V3CXQuNV5Fy9lyioJl6A';
+const GOOGLE_SHEET_ID = '1Cmxdk7ta4q75rTtjU0DDNbO-k1vHrBo4r6vzt_B15qc';
+const SHEET_RANGE = 'A1:A100';
+
 function wait(ms) {
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -18,36 +24,48 @@ function wait(ms) {
   });
 }
 
-function CookiesToJson(e) {
-  var o = e.match(/(Mozilla.*?)\|/);
-  // eslint-disable-next-line no-unused-expressions
-  o &&
-    (chrome.storage.local.set({ anh_user_agent: o[1] }),
-    chrome.storage.local.set({ default_user_agent: 0 }),
-    chrome.runtime.sendMessage({ greeting: o[1] }));
-  var t = e.match('(\\.|)shopee(.*?)$'),
-    i = '';
-  if (!t) return '';
-  for (var n = t[0].split(';'), a = 0; a < n.length; a++)
-    if (n[a]) {
-      var s = n[a].split('='),
-        c = s[0],
-        r = s[1];
-      i +=
-        '{"domain":"' +
-        c +
-        '","name":"' +
-        r +
-        '","path":"/","value":"' +
-        n[a].match(c + '=' + r + '=(.*?)$')[1].replaceAll('"', '') +
-        '"},';
-    }
-  return (i = '[' + (i = i.substring(0, i.length - 1)) + ']');
-}
-
 const Popup = () => {
+  const [apiKey, setApiKey] = useState('');
+  const [isKeyActive, setIsKeyActive] = useState(false);
   const [textValue, setTextValue] = useState('');
   const [cookies, setCookies] = useState('');
+
+  useEffect(() => {
+    const storedKey = localStorage.getItem('apiKey');
+    if (storedKey) {
+      checkKeyOnGoogleSheets(storedKey);
+    }
+  }, []);
+
+  const checkKeyOnGoogleSheets = async (key) => {
+    try {
+      const response = await axios.get(
+        `https://sheets.googleapis.com/v4/spreadsheets/${GOOGLE_SHEET_ID}/values/${SHEET_RANGE}?key=${GOOGLE_API_KEY}`
+      );
+      const validKeys = response.data.values.flat();
+
+      if (validKeys.includes(key)) {
+        setApiKey(key);
+        setIsKeyActive(true);
+      } else {
+        alert('API Key không hợp lệ hoặc đã hết hạn!');
+        setIsKeyActive(false);
+        localStorage.removeItem('apiKey');
+      }
+    } catch (error) {
+      console.error('Lỗi khi kiểm tra API Key:', error);
+      alert('Không thể kiểm tra API Key. Vui lòng thử lại!');
+    }
+  };
+
+  const handleActivateKey = () => {
+    if (apiKey.trim()) {
+      checkKeyOnGoogleSheets(apiKey);
+      localStorage.setItem('apiKey', apiKey);
+    } else {
+      alert('Vui lòng nhập API Key!');
+    }
+  };
 
   const handleChange = (event) => {
     setTextValue(event.target.value);
@@ -61,11 +79,10 @@ const Popup = () => {
     const urls = textValue.split('\n');
 
     if (cookies) {
-      const cookiesJSON = CookiesToJson(cookies.trim());
       chrome.runtime.sendMessage(
         {
           action: 'importCookies',
-          data: cookiesJSON,
+          data: cookies.trim(),
         },
         async () => {
           await wait(3000);
@@ -76,6 +93,7 @@ const Popup = () => {
       );
     }
   };
+
   return (
     <Card sx={{ width: 800 }}>
       <CardContent>
@@ -108,41 +126,65 @@ const Popup = () => {
           </Box>
         </Box>
       </CardContent>
-      <Divider sx={{ mb: 2 }} /> {/* Border phân cách dưới Header */}
+      <Divider sx={{ mb: 2 }} />
       <CardContent>
-        <TextField
-          label="Nhập cookies"
-          multiline
-          rows={4}
-          placeholder="Vui lòng nhập cookies"
-          variant="outlined"
-          style={{ width: '100%' }}
-          value={cookies}
-          onChange={handleChangeCookies}
-        />
+        {!isKeyActive ? (
+          <Box>
+            <Typography variant="h6" sx={{ marginBottom: 2 }}>
+              Vui lòng nhập API Key để kích hoạt
+            </Typography>
+            <TextField
+              label="Nhập API Key"
+              fullWidth
+              variant="outlined"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              sx={{ marginBottom: 2 }}
+            />
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleActivateKey}
+              sx={{ textTransform: 'none', fontWeight: 'bold' }}
+            >
+              Kích hoạt
+            </Button>
+          </Box>
+        ) : (
+          <Box>
+            <TextField
+              label="Nhập cookies"
+              multiline
+              rows={4}
+              placeholder="Vui lòng nhập cookies"
+              variant="outlined"
+              style={{ width: '100%' }}
+              value={cookies}
+              onChange={handleChangeCookies}
+            />
+            <Divider sx={{ my: 2 }} />
+            <TextField
+              label="Nhập link mỗi dòng"
+              multiline
+              rows={4}
+              placeholder="Nhập các link, mỗi link một dòng..."
+              variant="outlined"
+              style={{ width: '100%' }}
+              value={textValue}
+              onChange={handleChange}
+            />
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleSubmit}
+              style={{ marginTop: 16 }}
+            >
+              Bắt đầu
+            </Button>
+          </Box>
+        )}
       </CardContent>
-      <Divider sx={{ mb: 2 }} /> {/* Border phân cách dưới Header */}
-      <CardContent>
-        <TextField
-          label="Nhập link mỗi dòng"
-          multiline
-          rows={4}
-          placeholder="Nhập các link, mỗi link một dòng..."
-          variant="outlined"
-          style={{ width: '100%' }}
-          value={textValue}
-          onChange={handleChange}
-        />
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleSubmit}
-          style={{ marginTop: 16 }}
-        >
-          Bắt đầu
-        </Button>
-      </CardContent>
-      <Divider sx={{ mb: 2 }} /> {/* Border phân cách dưới Header */}
+      <Divider sx={{ mb: 2 }} />
     </Card>
   );
 };
